@@ -412,10 +412,15 @@ if "results" in st.session_state:
             except: return ""
             return ""
         st2 = s.style
+        # pandas >= 2.1 renamed applymap → map; support both
+        def _applymap(styler, fn, subset):
+            if hasattr(styler, "map"):
+                return styler.map(fn, subset=subset)
+            return styler.applymap(fn, subset=subset)
         for col in ["% EMA10","% SMA50","% SMA200","52W%","1M%","3M%","6M%"]:
-            if col in s.columns: st2 = st2.applymap(cp, subset=[col])
-        if "Status" in s.columns: st2 = st2.applymap(cs, subset=["Status"])
-        if "RS"     in s.columns: st2 = st2.applymap(cr, subset=["RS"])
+            if col in s.columns: st2 = _applymap(st2, cp, subset=[col])
+        if "Status" in s.columns: st2 = _applymap(st2, cs, subset=["Status"])
+        if "RS"     in s.columns: st2 = _applymap(st2, cr, subset=["RS"])
         return st2
 
     st.dataframe(style_df(disp), use_container_width=True, height=500, hide_index=True)
